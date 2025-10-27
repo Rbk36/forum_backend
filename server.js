@@ -49,7 +49,7 @@
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
-import { default as axiosInstance } from "../FrontEnd/src/utility/axios.js"; // Adjust the path as needed
+// import { default as axiosInstance } from "../FrontEnd/src/utility/axios.js"; // Adjust the path as needed
 import dbConnection from "./config/dbConfig.js"; // Adjust the path as needed
 import userRoutes from "./routes/userRoutes.js"; // Adjust the path as needed
 import questionRoutes from "./routes/questionRoute.js"; // Adjust the path as needed
@@ -91,26 +91,26 @@ app.post("/ai/answer", async (req, res) => {
     return res.status(400).json({ error: "Question is required" });
   }
 
-  try {
-    const response = await axiosInstance.post(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        model: "gemini-2.5-flash",
-        messages: [{ role: "user", content: question }],
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.GEMINI_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+  // try {
+  //   const response = await axiosInstance.post(
+  //     "https://api.openai.com/v1/chat/completions",
+  //     {
+  //       model: "gemini-2.5-flash",
+  //       messages: [{ role: "user", content: question }],
+  //     },
+  //     {
+  //       headers: {
+  //         Authorization: `Bearer ${process.env.GEMINI_API_KEY}`,
+  //         "Content-Type": "application/json",
+  //       },
+  //     }
+  //   );
 
-    res.json({ answer: response.data.choices[0].message.content });
-  } catch (error) {
-    console.error("Error generating AI answer:", error);
-    res.status(500).json({ error: "Failed to generate AI answer" });
-  }
+  //   res.json({ answer: response.data.choices[0].message.content });
+  // } catch (error) {
+  //   console.error("Error generating AI answer:", error);
+  //   res.status(500).json({ error: "Failed to generate AI answer" });
+  // }
 });
 
 start();
