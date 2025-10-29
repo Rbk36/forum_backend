@@ -25,8 +25,13 @@
 // export default router;
 // routes/answerRoute.js
 import express from "express";
-import { getAnswer, postAnswer } from "../controller/answerController.js";
-import authMiddleware from "../middleware/authMiddleware.js";
+import {
+  getAnswers,
+  postAnswer,
+  editAnswer,
+  deleteAnswer,
+} from "../controller/answerController.js";
+import authenticateUser from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 

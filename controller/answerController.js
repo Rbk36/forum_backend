@@ -45,7 +45,7 @@ export async function postAnswer(req, res) {
   try {
     await dbConnection.query(
       "INSERT INTO answers (userid, questionid, answer, createdAt) VALUES (?, ?, ?, ?)",
-      [userid, questionid, answer, formattedTimestamp]
+      [userid, questionid, answer, createdAt]
     );
     return res.status(StatusCodes.CREATED).json({
       message: "Answer posted successfully",

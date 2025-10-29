@@ -3,9 +3,8 @@ const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 dotenv.config();
 
-async function authMiddleware(req, res, next) {
+async function authenticateUser(req, res, next) {
   const authHeader = req.headers.authorization;
-
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res
       .status(StatusCodes.UNAUTHORIZED)

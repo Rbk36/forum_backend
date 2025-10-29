@@ -11,13 +11,13 @@ import {
 // 2. Importing  middleware
 import authMiddleware from "../middleware/authMiddleware.js";
 
-// get all questions
-router.get("/questions", getAllQuestions);
+// Post a new question
+router.post("/", authenticateUser, postQuestion);
 
-// get single question
-router.get("/question/:questionId", getQuestionAndAnswer);
+// Edit a question (only the user who posted it)
+router.patch("/:questionid", authenticateUser, editQuestion);
 
-// post a question
-router.post("/question", authMiddleware, postQuestion);
+// Delete a question (only the user who posted it)
+router.delete("/:questionid", authenticateUser, deleteQuestion);
 
 export default router;
