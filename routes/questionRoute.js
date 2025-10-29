@@ -1,23 +1,29 @@
+// routes/questionRoute.js
 import express from "express";
+import {
+  getAllQuestions,
+  getQuestionById,
+  postQuestion,
+  editQuestion,
+  deleteQuestion,
+} from "../controller/questionController.js";
+import authenticateUser from "../middleware/authMiddleware.js";
+
 const router = express.Router();
 
-// 1. Importing controllers
-import {
-  postQuestion,
-  getAllQuestions,
-  getQuestionAndAnswer,
-} from "../controller/questionController.js";
+// Get all questions
+router.get("/", authenticateUser, getAllQuestions);
 
-// 2. Importing  middleware
-import authMiddleware from "../middleware/authMiddleware.js";
+// Get a single question by ID
+router.get("/:questionid", authenticateUser, getQuestionById);
 
-// get all questions
-router.get("/questions", getAllQuestions);
+// Post a new question
+router.post("/", authenticateUser, postQuestion);
 
-// get single question
-router.get("/question/:questionId", getQuestionAndAnswer);
+// Edit a question (only the user who posted it)
+router.patch("/:questionid", authenticateUser, editQuestion);
 
-// post a question
-router.post("/question", authMiddleware, postQuestion);
+// Delete a question (only the user who posted it)
+router.delete("/:questionid", authenticateUser, deleteQuestion);
 
 export default router;

@@ -1,16 +1,25 @@
+// routes/answerRoute.js
 import express from "express";
+import {
+  getAnswers,
+  postAnswer,
+  editAnswer,
+  deleteAnswer,
+} from "../controller/answerController.js";
+import authenticateUser from "../middleware/authMiddleware.js";
+
 const router = express.Router();
 
-// 1. Importing controllers
-import { getAnswer, postAnswer } from "../controller/answerController.js";
+// GET answers for a question
+router.get("/answers/:questionid", authenticateUser, getAnswers);
 
-// 2. Importing middleware
-import authMiddleware from "../middleware/authMiddleware.js";
+// POST a new answer
+router.post("/answer", authenticateUser, postAnswer);
 
-// Get Answers for a Question
-router.get("/answer/:question_id", getAnswer);
+// PATCH edit answer (owner only)
+router.patch("/answer/:answerid", authenticateUser, editAnswer);
 
-// Post Answers for a Question
-router.post("/answer", authMiddleware, postAnswer);
+// DELETE answer (owner only)
+router.delete("/answer/:answerid", authenticateUser, deleteAnswer);
 
 export default router;

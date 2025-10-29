@@ -6,12 +6,9 @@ import { GoogleGenAI } from "@google/genai";
 import { StatusCodes } from "http-status-codes";
 import dbConnection from "../config/dbConfig.js";
 
+// Initialize the client
 const aiClient = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
-  // If you are using Vertex AI instead of the developer API:
-  // vertexai: true,
-  // project: process.env.GOOGLE_CLOUD_PROJECT,
-  // location: process.env.GOOGLE_CLOUD_LOCATION,
 });
 
 export const generateAIAnswer = async (req, res) => {
@@ -24,40 +21,18 @@ export const generateAIAnswer = async (req, res) => {
   }
 
   try {
-    // 1. Verify the question exists
-    const [qRows] = await dbConnection.query(
+    // Fetch question from DB
+    const [rows] = await dbConnection.query(
       "SELECT title, description FROM questions WHERE questionid = ?",
       [questionid]
     );
-
-    if (qRows.length === 0) {
+    if (rows.length === 0) {
       return res.status(StatusCodes.NOT_FOUND).json({
         message: "Question not found.",
       });
     }
 
-    const question = qRows[0];
-
-    // 2. Verify the AI user exists (so foreign key constraint won't fail)
-    const aiUserId = parseInt(process.env.AI_USER_ID, 10);
-    if (isNaN(aiUserId)) {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: "AI_USER_ID is not configured properly.",
-      });
-    }
-
-    const [userRows] = await dbConnection.query(
-      "SELECT userid FROM users WHERE userid = ?",
-      [aiUserId]
-    );
-
-    if (userRows.length === 0) {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: "Configured AI user does not exist in users table.",
-      });
-    }
-
-    // 3. Build full prompt
+    const question = rows[0];
     const fullPrompt = `
 Question Title: ${question.title}
 Description: ${question.description}
@@ -66,24 +41,20 @@ Please answer the following:
 ${prompt}
     `;
 
-    // 4. Call the AI model to generate answer
+    // Generate AI answer
     const response = await aiClient.models.generateContent({
-      model: "gemini-2.5-flash", // Ensure this model string is supported in your region/project
+      model: "gemini-2.5-flash",
       contents: [
         {
           role: "user",
           parts: [{ text: fullPrompt }],
         },
       ],
-      // (Optional) You may add config like temperature, maxOutputTokens here
     });
+    const aiAnswerText = response.text.trim();
 
-    const aiAnswerText = (response.text || "").trim();
-    if (!aiAnswerText) {
-      throw new Error("AI returned empty answer text");
-    }
-
-    // 5. Insert the AI-generated answer
+    // Insert into DB
+    const aiUserId = process.env.AI_USER_ID || 0;
     const currentTimestamp = new Date()
       .toISOString()
       .slice(0, 19)
@@ -94,7 +65,7 @@ ${prompt}
       [aiUserId, questionid, aiAnswerText, currentTimestamp]
     );
 
-    // 6. Respond success
+    // Return response
     return res.status(StatusCodes.CREATED).json({
       message: "AI answer posted successfully.",
       answer: aiAnswerText,
