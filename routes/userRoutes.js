@@ -1,5 +1,5 @@
 const express = require("express");
-const router = express.Router(); // using router insted of app on the servers
+const router = express.Router();
 const { register, login, check } = require("../controller/usercontroller.js");
 // authentication middleware
 const authMiddleware = require("../middleware/authMiddleware.js");

@@ -1,11 +1,17 @@
 // controllers/aiController.js
-const GoogleGenerativeAI = require("@google/genai");
-const { StatusCodes } = require("http-status-codes");
-const dbConnection = require("../config/dbConfig");
-const dotenv = require("dotenv");
+import dotenv from "dotenv";
 dotenv.config();
-const gemini = new GoogleGenerativeAI({
+
+import { GoogleGenAI } from "@google/genai";
+import { StatusCodes } from "http-status-codes";
+import dbConnection from "../config/dbConfig.js";
+
+const aiClient = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
+  // If you are using Vertex AI instead of the developer API:
+  // vertexai: true,
+  // project: process.env.GOOGLE_CLOUD_PROJECT,
+  // location: process.env.GOOGLE_CLOUD_LOCATION,
 });
 
 export const generateAIAnswer = async (req, res) => {
@@ -18,50 +24,88 @@ export const generateAIAnswer = async (req, res) => {
   }
 
   try {
-    // Fetch question details from the database
-    const [rows] = await dbConnection.query(
+    // 1. Verify the question exists
+    const [qRows] = await dbConnection.query(
       "SELECT title, description FROM questions WHERE questionid = ?",
       [questionid]
     );
 
-    if (rows.length === 0) {
+    if (qRows.length === 0) {
       return res.status(StatusCodes.NOT_FOUND).json({
         message: "Question not found.",
       });
     }
 
-    const question = rows[0];
-    const fullPrompt = `
-      Question Title: ${question.title}
-      Description: ${question.description}
+    const question = qRows[0];
 
-      Please answer the following:
-      ${prompt}
+    // 2. Verify the AI user exists (so foreign key constraint won't fail)
+    const aiUserId = parseInt(process.env.AI_USER_ID, 10);
+    if (isNaN(aiUserId)) {
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: "AI_USER_ID is not configured properly.",
+      });
+    }
+
+    const [userRows] = await dbConnection.query(
+      "SELECT userid FROM users WHERE userid = ?",
+      [aiUserId]
+    );
+
+    if (userRows.length === 0) {
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: "Configured AI user does not exist in users table.",
+      });
+    }
+
+    // 3. Build full prompt
+    const fullPrompt = `
+Question Title: ${question.title}
+Description: ${question.description}
+
+Please answer the following:
+${prompt}
     `;
 
-    // Generate AI response
-    const model = gemini.getGenerativeModel({ model: "gemini-2.5-flash" });
-    const response = await model.generateContent(fullPrompt);
-    const aiAnswerText = response.text.trim();
+    // 4. Call the AI model to generate answer
+    const response = await aiClient.models.generateContent({
+      model: "gemini-2.5-flash", // Ensure this model string is supported in your region/project
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: fullPrompt }],
+        },
+      ],
+      // (Optional) You may add config like temperature, maxOutputTokens here
+    });
 
-    // Insert AI-generated answer into the database
-    const aiUserId = process.env.AI_USER_ID || 0; // Ensure this user exists or handle appropriately
+    const aiAnswerText = (response.text || "").trim();
+    if (!aiAnswerText) {
+      throw new Error("AI returned empty answer text");
+    }
+
+    // 5. Insert the AI-generated answer
     const currentTimestamp = new Date()
       .toISOString()
       .slice(0, 19)
       .replace("T", " ");
+
     await dbConnection.query(
       "INSERT INTO answers (userid, questionid, answer, createdAt) VALUES (?, ?, ?, ?)",
       [aiUserId, questionid, aiAnswerText, currentTimestamp]
     );
 
-    res.status(StatusCodes.CREATED).json({
+    // 6. Respond success
+    return res.status(StatusCodes.CREATED).json({
       message: "AI answer posted successfully.",
       answer: aiAnswerText,
     });
   } catch (error) {
     console.error("Error generating AI answer:", error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+    if (error.stack) console.error("Stack:", error.stack);
+    if (error.response)
+      console.error("API Response error data:", error.response.data);
+
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       message: "Failed to generate AI answer.",
       error: error.message,
     });

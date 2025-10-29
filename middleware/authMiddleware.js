@@ -1,7 +1,6 @@
-import { StatusCodes } from "http-status-codes";
-import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-
+const { StatusCodes } = require("http-status-codes");
+const jwt = require("jsonwebtoken");
+const dotenv = require("dotenv");
 dotenv.config();
 
 async function authMiddleware(req, res, next) {
@@ -14,12 +13,17 @@ async function authMiddleware(req, res, next) {
   }
 
   try {
+    // If the token format is 'Bearer <token>', extract the token
     const token = authHeader.split(" ")[1];
-    const secret = process.env.JWT_SECRET;
-
+    // console.log(token);
+    // console.log(authHeader);
+const secret = process.env.JWT_SECRET;
     const { username, userid } = jwt.verify(token, secret);
 
+    // Attach user info to the request object
     req.user = { username, userid };
+
+    // Call next middleware
     next();
   } catch (error) {
     return res
@@ -28,4 +32,4 @@ async function authMiddleware(req, res, next) {
   }
 }
 
-export default authMiddleware;
+module.exports = authMiddleware;
