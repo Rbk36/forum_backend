@@ -78,11 +78,11 @@
 // router.post("/ai/answer", generateResponse);
 
 // export default router;
-import express from "express";
-import { generateAIAnswer } from "../controller/aiController.js";
+const express = require("express");
+const { generateAIAnswer } = require("../controller/aiController.js");
 
 const router = express.Router();
 
 router.post("/ai/answer", generateAIAnswer);
 
-export default router;
+module.exports = router;

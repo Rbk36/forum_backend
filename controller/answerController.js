@@ -1,8 +1,8 @@
 // controllers/answerController.js
-import { StatusCodes } from "http-status-codes";
-import dbConnection from "../config/dbConfig.js";
+const { StatusCodes } = require("http-status-codes");
+const dbConnection = require("../config/dbConfig.js");
 
-export async function getAnswer(req, res) {
+async function getAnswer(req, res) {
   const { questionid } = req.params;
   try {
     const [rows] = await dbConnection.query(
@@ -25,7 +25,7 @@ export async function getAnswer(req, res) {
   }
 }
 
-export async function postAnswer(req, res) {
+async function postAnswer(req, res) {
   const { answer, questionid } = req.body;
   const userid = req.user.userid;
 
@@ -59,7 +59,7 @@ export async function postAnswer(req, res) {
   }
 }
 
-export async function editAnswer(req, res) {
+async function editAnswer(req, res) {
   const { answerid } = req.params;
   const { answer } = req.body;
   const currentUserId = req.user.userid;
@@ -101,7 +101,7 @@ export async function editAnswer(req, res) {
   }
 }
 
-export async function deleteAnswer(req, res) {
+async function deleteAnswer(req, res) {
   const { answerid } = req.params;
   const currentUserId = req.user.userid;
 
@@ -134,3 +134,9 @@ export async function deleteAnswer(req, res) {
     });
   }
 }
+module.exports = {
+  getAnswer,
+  postAnswer,
+  editAnswer,
+  deleteAnswer,
+};

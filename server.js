@@ -1,15 +1,17 @@
-import "dotenv/config";
-import express from "express";
-import cors from "cors";
-import dbConnection from "./config/dbConfig.js";
+const dotenv = require("dotenv");
+dotenv.config();
+const express = require("express");
+const cors = require("cors");
+const dbConnection = require("./config/dbConfig.js");
 
-import userRoutes from "./routes/userRoutes.js";
-import questionRoutes from "./routes/questionRoute.js";
-import answerRoutes from "./routes/answerRoute.js";
-import aiRoutes from "./routes/aiAnswerRoute.js";
+const userRoutes = require("./routes/userRoutes.js");
+const questionRoutes = require("./routes/questionRoute.js");
+const answerRoutes = require("./routes/answerRoute.js");
+const aiRoutes = require("./routes/aiAnswerRoute.js");
 
-const app = express();
 const port = process.env.PORT || 5000;
+const app = express();
+
 app.use(express.json());
 
 app.use(

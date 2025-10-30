@@ -1,15 +1,15 @@
-import express from "express";
+const express = require("express");
 const router = express.Router();
 
 // 1. Importing controllers
-import {
+const {
   postQuestion,
   getAllQuestions,
   getQuestionAndAnswer,
-} from "../controller/questionController.js";
+} = require("../controller/questionController.js");
 
 // 2. Importing  middleware
-import authMiddleware from "../middleware/authMiddleware.js";
+const authMiddleware = require("../middleware/authMiddleware.js");
 
 // get all questions
 router.get("/questions", getAllQuestions);
@@ -20,4 +20,4 @@ router.get("/question/:questionId", getQuestionAndAnswer);
 // post a question
 router.post("/question", authMiddleware, postQuestion);
 
-export default router;
+module.exports = router;
