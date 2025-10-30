@@ -52,9 +52,11 @@ const aiRoutes = require("./routes/aiAnswerRoute.js");
 
 const app = express();
 
-// ✅ Use Render-provided PORT or fallback
-const port = process.env.PORT || 10000;
-
+const port = process.env.PORT;
+if (!port) {
+  console.error("❌ PORT not defined");
+  process.exit(1);
+}
 app.use(express.json());
 
 app.use(
@@ -74,10 +76,9 @@ async function start() {
     await dbConnection.execute("SELECT 'test'");
     console.log("✅ Database connected successfully");
 
-    // ✅ Render detects this listener
-    app.listen(port, () => {
-      console.log(`🚀 Server running on port ${port}`);
-    });
+    app.listen(port, "0.0.0.0", () =>
+      console.log(`🚀 Server running at port ${port}`)
+    );
   } catch (err) {
     console.error("❌ Failed to start server:", err.message);
     process.exit(1);
