@@ -16,7 +16,7 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: ["https://forum-backend-6-jiwq.onrender.com"],
   })
 );
 
@@ -30,7 +30,7 @@ async function start() {
   try {
     await dbConnection.execute("SELECT 'test'");
     console.log("✅ Database connected successfully");
-    app.listen(port, () =>
+    app.listen(port, "0.0.0.0", () =>
       console.log(`🚀 Server running at http://localhost:${port}`)
     );
   } catch (err) {
