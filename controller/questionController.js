@@ -1,7 +1,6 @@
 const { StatusCodes } = require("http-status-codes");
 const dbConnection = require("../config/dbConfig");
 
-
 // post questions / ask questions
 async function postQuestion(req, res) {
   const { userid, title, description } = req.body;
