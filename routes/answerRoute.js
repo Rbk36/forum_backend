@@ -24,9 +24,9 @@
 
 // export default router;
 // routes/answerRoute.js
-import express from "express";
-import { getAnswer, postAnswer } from "../controller/answerController.js";
-import authMiddleware from "../middleware/authMiddleware.js";
+const express = require("express");
+const { getAnswer, postAnswer } = require("../controller/answerController.js");
+const authMiddleware = require("../middleware/authMiddleware.js");
 
 const router = express.Router();
 
@@ -36,4 +36,4 @@ router.get("/answers/:question_id", authMiddleware, getAnswer);
 // Post a new answer to a question
 router.post("/answer", authMiddleware, postAnswer);
 
-export default router;
+module.exports = router;

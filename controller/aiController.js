@@ -1,10 +1,12 @@
+const router = require("../routes/answerRoute.js");
+
 // controllers/aiController.js
-import dotenv from "dotenv";
+const dotenv = require("dotenv");
 dotenv.config();
 
-import { GoogleGenAI } from "@google/genai";
-import { StatusCodes } from "http-status-codes";
-import dbConnection from "../config/dbConfig.js";
+const { GoogleGenAI } = require("@google/genai");
+const { StatusCodes } = require("http-status-codes");
+const dbConnection = require("../config/dbConfig.js");
 
 const aiClient = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
@@ -14,7 +16,7 @@ const aiClient = new GoogleGenAI({
   // location: process.env.GOOGLE_CLOUD_LOCATION,
 });
 
-export const generateAIAnswer = async (req, res) => {
+const generateAIAnswer = async (req, res) => {
   const { questionid, prompt } = req.body;
 
   if (!questionid || !prompt) {
@@ -111,3 +113,4 @@ ${prompt}
     });
   }
 };
+module.exports = { generateAIAnswer };
