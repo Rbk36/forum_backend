@@ -8,8 +8,9 @@ import questionRoutes from "./routes/questionRoute.js";
 import answerRoutes from "./routes/answerRoute.js";
 import aiRoutes from "./routes/aiAnswerRoute.js";
 
-const app = express();
 const port = process.env.PORT || 5000;
+const app = express();
+
 app.use(express.json());
 
 app.use(
