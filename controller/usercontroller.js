@@ -92,7 +92,7 @@ async function login(req, res) {
     const isMatch = await bcrypt.compare(password, user[0].password);
     if (!isMatch) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        msg: "Invalid credentials. Please check your details and try again.", 
+        msg: "Invalid credentials. Please check your details and try again.",
       });
     }
 
