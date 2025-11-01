@@ -10,7 +10,7 @@ async function getAnswer(req, res) {
               a.userid AS userid,
               a.answer,
               a.createdAt,
-              u.username 
+              u.username
        FROM answers a
        INNER JOIN users u ON a.userid = u.userid
        WHERE a.questionid = ?`,
@@ -42,61 +42,25 @@ async function postAnswer(req, res) {
     .replace("T", " ");
 
   try {
-    await dbConnection.query(
+    const [result] = await dbConnection.query(
       "INSERT INTO answers (userid, questionid, answer, createdAt) VALUES (?, ?, ?, ?)",
       [userid, questionid, answer, formattedTimestamp]
     );
-    return res.status(StatusCodes.CREATED).json({
-      message: "Answer posted successfully",
-    });
+    if (result.affectedRows === 1) {
+      return res.status(StatusCodes.CREATED).json({
+        message: "Answer posted successfully",
+      });
+    } else {
+      // Should rarely happen, but handle gracefully
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: "Failed to post answer",
+      });
+    }
   } catch (err) {
     console.error("❌ Error posting answer:", err);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       message: "Something went wrong, please try again later",
       detail: err.message,
-    });
-  }
-}
-
-async function editAnswer(req, res) {
-  const { answerid } = req.params;
-  const { answer } = req.body;
-  const currentUserId = req.user.userid;
-
-  if (!answer) {
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message: "Answer text is required",
-    });
-  }
-
-  try {
-    const [rows] = await dbConnection.query(
-      "SELECT userid FROM answers WHERE answerid = ?",
-      [answerid]
-    );
-
-    if (rows.length === 0) {
-      return res.status(StatusCodes.NOT_FOUND).json({
-        message: "Answer not found",
-      });
-    }
-    if (rows[0].userid !== currentUserId) {
-      return res.status(StatusCodes.FORBIDDEN).json({
-        message: "Not authorized to edit this answer",
-      });
-    }
-
-    await dbConnection.query(
-      "UPDATE answers SET answer = ? WHERE answerid = ?",
-      [answer, answerid]
-    );
-    return res.status(StatusCodes.OK).json({
-      message: "Answer updated successfully",
-    });
-  } catch (err) {
-    console.error("❌ Error editing answer:", err);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: "Something went wrong",
     });
   }
 }
@@ -116,19 +80,28 @@ async function deleteAnswer(req, res) {
         message: "Answer not found",
       });
     }
+
     if (rows[0].userid !== currentUserId) {
       return res.status(StatusCodes.FORBIDDEN).json({
         message: "Not authorized to delete this answer",
       });
     }
 
-    await dbConnection.query("DELETE FROM answers WHERE answerid = ?", [
-      answerid,
-    ]);
+    const [deleteResult] = await dbConnection.query(
+      "DELETE FROM answers WHERE answerid = ?",
+      [answerid]
+    );
 
-    return res.status(StatusCodes.OK).json({
-      message: "Answer deleted successfully",
-    });
+    if (deleteResult.affectedRows === 1) {
+      return res.status(StatusCodes.OK).json({
+        message: "Answer deleted successfully",
+      });
+    } else {
+      // If affectedRows is 0 (should not happen if row existed & matched), handle
+      return res.status(StatusCodes.NOT_FOUND).json({
+        message: "Answer not found or already deleted",
+      });
+    }
   } catch (err) {
     console.error("❌ Error deleting answer:", err);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -140,6 +113,6 @@ async function deleteAnswer(req, res) {
 module.exports = {
   getAnswer,
   postAnswer,
-  editAnswer,
   deleteAnswer,
+  // if you still have editAnswer you can export it, else remove
 };

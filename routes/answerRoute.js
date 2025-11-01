@@ -1,23 +1,21 @@
 const express = require("express");
 const router = express.Router();
+
 const {
   getAnswer,
   postAnswer,
-  editAnswer,
   deleteAnswer,
 } = require("../controllers/answerController.js");
+
 const authMiddleware = require("../middleware/authMiddleware.js");
 
-// get answers for a question
+// Get answers for a question: GET /api/v1/answer/:questionid
 router.get("/answer/:questionid", getAnswer);
 
-// post a new answer
+// Post a new answer: POST /api/v1/answer
 router.post("/answer", authMiddleware, postAnswer);
 
-// edit an answer
-router.put("/answer/:answerid", authMiddleware, editAnswer);
-
-// delete an answer
+// Delete an answer: DELETE /api/v1/answer/:answerid
 router.delete("/answer/:answerid", authMiddleware, deleteAnswer);
 
 module.exports = router;
