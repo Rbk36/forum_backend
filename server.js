@@ -193,7 +193,7 @@ app.options("*", cors(corsOptions));
 
 // Routes
 app.use("/api/v1/user", userRoutes);
-app.use("/api/v1", questionRoutes);
+app.use("/api/v1/question", questionRoutes);
 app.use("/api/v1", answerRoutes);
 app.use("/api/v1", aiRoutes);
 
