@@ -7,10 +7,10 @@ async function getAnswer(req, res) {
   try {
     const [rows] = await dbConnection.query(
       `SELECT a.answerid,
-              a.userid AS answer_userid,
+              a.userid AS userid,
               a.answer,
               a.createdAt,
-              u.username
+              u.username 
        FROM answers a
        INNER JOIN users u ON a.userid = u.userid
        WHERE a.questionid = ?`,
@@ -36,7 +36,6 @@ async function postAnswer(req, res) {
   }
 
   const currentDate = new Date();
-  // adjust if needed for UTC+3 etc.
   const formattedTimestamp = currentDate
     .toISOString()
     .slice(0, 19)
@@ -75,6 +74,7 @@ async function editAnswer(req, res) {
       "SELECT userid FROM answers WHERE answerid = ?",
       [answerid]
     );
+
     if (rows.length === 0) {
       return res.status(StatusCodes.NOT_FOUND).json({
         message: "Answer not found",
@@ -110,6 +110,7 @@ async function deleteAnswer(req, res) {
       "SELECT userid FROM answers WHERE answerid = ?",
       [answerid]
     );
+
     if (rows.length === 0) {
       return res.status(StatusCodes.NOT_FOUND).json({
         message: "Answer not found",
@@ -124,6 +125,7 @@ async function deleteAnswer(req, res) {
     await dbConnection.query("DELETE FROM answers WHERE answerid = ?", [
       answerid,
     ]);
+
     return res.status(StatusCodes.OK).json({
       message: "Answer deleted successfully",
     });
@@ -134,6 +136,7 @@ async function deleteAnswer(req, res) {
     });
   }
 }
+
 module.exports = {
   getAnswer,
   postAnswer,
