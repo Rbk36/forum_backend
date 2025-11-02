@@ -51,7 +51,6 @@ async function postAnswer(req, res) {
         message: "Answer posted successfully",
       });
     } else {
-      // Should rarely happen, but handle gracefully
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         message: "Failed to post answer",
       });
@@ -70,6 +69,7 @@ async function deleteAnswer(req, res) {
   const currentUserId = req.user.userid;
 
   try {
+    // Check if the answer exists
     const [rows] = await dbConnection.query(
       "SELECT userid FROM answers WHERE answerid = ?",
       [answerid]
@@ -77,16 +77,18 @@ async function deleteAnswer(req, res) {
 
     if (rows.length === 0) {
       return res.status(StatusCodes.NOT_FOUND).json({
-        message: "Answer not found",
+        message: "Answer not found or already deleted",
       });
     }
 
+    // Ensure user owns the answer
     if (rows[0].userid !== currentUserId) {
       return res.status(StatusCodes.FORBIDDEN).json({
         message: "Not authorized to delete this answer",
       });
     }
 
+    // Delete the answer
     const [deleteResult] = await dbConnection.query(
       "DELETE FROM answers WHERE answerid = ?",
       [answerid]
@@ -97,7 +99,6 @@ async function deleteAnswer(req, res) {
         message: "Answer deleted successfully",
       });
     } else {
-      // If affectedRows is 0 (should not happen if row existed & matched), handle
       return res.status(StatusCodes.NOT_FOUND).json({
         message: "Answer not found or already deleted",
       });
@@ -105,7 +106,8 @@ async function deleteAnswer(req, res) {
   } catch (err) {
     console.error("❌ Error deleting answer:", err);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: "Something went wrong",
+      message: "Something went wrong while deleting answer",
+      error: err.message,
     });
   }
 }
@@ -114,5 +116,4 @@ module.exports = {
   getAnswer,
   postAnswer,
   deleteAnswer,
-  // if you still have editAnswer you can export it, else remove
 };
