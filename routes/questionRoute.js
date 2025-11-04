@@ -1,23 +1,23 @@
 const express = require("express");
 const router = express.Router();
 
-// 1. Importing controllers
+// Controllers
 const {
   postQuestion,
   getAllQuestions,
   getQuestionAndAnswer,
 } = require("../controller/questionController.js");
 
-// 2. Importing  middleware
+// Middleware
 const authMiddleware = require("../middleware/authMiddleware.js");
 
-// get all questions
+// GET all questions (with optional pagination via query params page & limit)
 router.get("/questions", getAllQuestions);
 
-// get single question
+// GET a single question with its answers
 router.get("/question/:questionId", getQuestionAndAnswer);
 
-// post a question
+// POST a new question (authenticated)
 router.post("/question", authMiddleware, postQuestion);
 
 module.exports = router;
